@@ -1,3 +1,5 @@
+import math
+
 import graphics as gx
 
 from win32api import GetSystemMetrics
@@ -97,6 +99,8 @@ class MainWindow:
         # FIRST CHECK IF IT BELONGS TO AN ALGORITHM OR MORE MENU OPTIONS
         algorithm = self.getAlgorithmClicked(xClick)
         row, column = self.getCellClickedCoordinates(xClick, yClick, algorithm)
+        if(row < 0 or column < 0):
+            return
         for algorithm in self.ALGORITHMS:
             cell = self.ALGORITHM_MODELS[algorithm][row][column]
             cell.click()
@@ -115,7 +119,13 @@ class MainWindow:
         cellSize = self.config['algorithmNodes']['size']
         gridSize = self.config['algorithmColumns']['algorithmGridSize']
 
-        column_index = int((xClick - algorithmGridStartX) / cellSize)
-        row_index = int((yClick - algorithmGridStartY) / cellSize)
+        column_index = math.floor((xClick - algorithmGridStartX) / cellSize)
+        row_index = math.floor((yClick - algorithmGridStartY) / cellSize)
+
+        if self.areInsideAlgorithmGrid(column_index, row_index):
+            return -1, -1
 
         return row_index, column_index
+
+    def areInsideAlgorithmGrid(self, column, row):
+        return column < 0 or column >= self.NODES_PER_SIDE or row < 0 or row >= self.NODES_PER_SIDE
