@@ -6,14 +6,20 @@ from win32api import GetSystemMetrics
 from AlgorithmGrid import AlgorithmGrid
 from ViewConfiguration import getConfiguration, getAlgorithmsInOrder
 
+from DFSAlgorithm import DFSAlgorithm
+from BFSAlgorithm import BFSAlgorithm
+
+from time import sleep
+
 class MainWindow:
 
     NODES_PER_SIDE = 15
     WINDOW_NAME = "Algorithm comparator"
+    SECONDS_PER_STEP = 0.05
 
     def __init__(self):
         self.width = GetSystemMetrics(0) * 0.9
-        self.height = GetSystemMetrics(1) * 0.9
+        self.height = GetSystemMetrics(1) * 0.7
         self.algorithms = getAlgorithmsInOrder()
 
         self.setupModels()
@@ -45,13 +51,43 @@ class MainWindow:
             self._handleClick(clickPoint)
         
     def _handleClick(self, clickPoint):
+        ## IF GRID CLICK
         xClick, yClick = clickPoint.getX(), clickPoint.getY()
         row, column = self._getCellClickedCoordinates(xClick, yClick)
-        print(row, column)
         if(not (row < 0 or column < 0)):
             for algorithm in self.algorithms:
                 cell = self.algorithmModels[algorithm][row][column]
                 cell.click()
+        else: ## IF START CLICK ---- NEEDS TO IMPLEMENT LOGIC
+            self._runAlgorithms()
+
+    def _runAlgorithms(self):
+        DFS = DFSAlgorithm(self.algorithmModels['DFS'])
+        BFS = BFSAlgorithm(self.algorithmModels['BFS'])
+        for dfsResponse, bfsResponse in zip(DFS.run(), BFS.run()):
+            dfsFinished, dfsState = dfsResponse
+            bfsFinished, bfsState = bfsResponse
+            if dfsFinished:
+                if dfsState == DFSAlgorithm.NO_SOLUTION_STATE:
+                    self.algorithmModels['DFS'].setBackgroundColor('red')
+                elif dfsState == DFSAlgorithm.FINISH_STATE:
+                    self.algorithmModels['DFS'].setBackgroundColor('green')
+            if bfsFinished:
+                if bfsState == BFSAlgorithm.NO_SOLUTION_STATE:
+                    self.algorithmModels['BFS'].setBackgroundColor('red')
+                elif bfsState == BFSAlgorithm.FINISH_STATE:
+                    self.algorithmModels['BFS'].setBackgroundColor('green')
+            if all([dfsFinished, bfsFinished]):
+                self.window.getMouse()
+                self._resetAlgorithmsState()
+                return
+            sleep(self.SECONDS_PER_STEP)
+    
+    def _resetAlgorithmsState(self):
+        for algorithm in self.algorithms:
+            self.algorithmModels[algorithm].resetState()
+            self.algorithmModels[algorithm].setBackgroundColor('black')
+
 
     def _getCellClickedCoordinates(self, xClick, yClick):
         config = getConfiguration(self.width, self.height, self.NODES_PER_SIDE, self.algorithms[0])

@@ -8,6 +8,9 @@ class AlgorithmGridView:
     def draw(self, window):
         self.background.draw(window)
 
+    def setBackgroundColor(self, color):
+        self.background.setFill(color)
+
     def _getAlgorithmGridBackground(self):
         P1 = gx.Point(
             self.config['algorithmColumns']['xOffsetUL'],
