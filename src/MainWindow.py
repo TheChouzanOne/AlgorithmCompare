@@ -4,7 +4,6 @@ import graphics as gx
 
 from win32api import GetSystemMetrics
 from AlgorithmGrid import AlgorithmGrid
-
 from ViewConfiguration import getConfiguration, getAlgorithmsInOrder
 
 class MainWindow:

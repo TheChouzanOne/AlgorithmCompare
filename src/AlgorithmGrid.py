@@ -1,7 +1,5 @@
 from GridNode import GridNode
-
 from AlgorithmGridView import AlgorithmGridView
-
 from ViewConfiguration import getConfiguration
 
 class AlgorithmGrid:
@@ -11,17 +9,6 @@ class AlgorithmGrid:
         
         self.grid = self._getInitialGrid()
         self.view = AlgorithmGridView(width, height, nodesPerSide, self.config)
-
-    # def __iter__(self):
-    #     self.iterCounter = 0
-    #     return self
-
-    # def __next__(self):
-    #     if self.iterCounter >= self.nodesPerSide:
-    #         raise StopIteration
-    #     nextItem = self.grid[self.iterCounter]
-    #     self.iterCounter = self.iterCounter + 1
-    #     return nextItem
 
     def draw(self, window):
         self.view.draw(window)

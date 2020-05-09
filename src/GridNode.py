@@ -1,9 +1,6 @@
-import graphics as gx
-
 from GridNodeView import GridNodeView
 
 class GridNode:
-    
     WALL_STATE = 'wall'
     UNDISCOVERED_STATE = 'undiscovered'
     DISCOVERED_STATE = 'discovered'
