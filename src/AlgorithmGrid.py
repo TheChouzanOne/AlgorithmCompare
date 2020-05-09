@@ -1,35 +1,45 @@
-import graphics as gx
 from GridNode import GridNode
 
-class AlgorithmGrid:
-    def __init__(self, nodesPerSide):
-        self.nodesPerSide = nodesPerSide
-        self.grid = self.getInitialGrid()
+from AlgorithmGridView import AlgorithmGridView
 
-    def __str__(self):
-        gridString = ""
+from ViewConfiguration import getConfiguration
+
+class AlgorithmGrid:
+    def __init__(self, width, height, nodesPerSide, algorithm):
+        self.nodesPerSide = nodesPerSide
+        self.config = getConfiguration(width, height, nodesPerSide, algorithm)
+        
+        self.grid = self._getInitialGrid()
+        self.view = AlgorithmGridView(width, height, nodesPerSide, self.config)
+
+    # def __iter__(self):
+    #     self.iterCounter = 0
+    #     return self
+
+    # def __next__(self):
+    #     if self.iterCounter >= self.nodesPerSide:
+    #         raise StopIteration
+    #     nextItem = self.grid[self.iterCounter]
+    #     self.iterCounter = self.iterCounter + 1
+    #     return nextItem
+
+    def draw(self, window):
+        self.view.draw(window)
         for row in self.grid:
             for cell in row:
-                gridString += "%s "%cell
-            gridString += '\n'
-
-        return gridString
-
-    def __iter__(self):
-        self.iterCounter = 0
-        return self
-
-    def __next__(self):
-        if self.iterCounter >= self.nodesPerSide:
-            raise StopIteration
-        nextItem = self.grid[self.iterCounter]
-        self.iterCounter = self.iterCounter + 1
-        return nextItem
+                cell.draw(window)
+                
 
     def __getitem__(self, index):
         return self.grid[index]
 
-    def getInitialGrid(self):
-        return [ [GridNode() for x in range(self.nodesPerSide)] for y in range(self.nodesPerSide) ]
+    def _getInitialGrid(self):
+        return [ 
+            [
+                GridNode(row, column, self.config) for column in range(self.nodesPerSide)
+            ] for row in range(self.nodesPerSide)
+        ]
+    
+
 
         

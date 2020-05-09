@@ -4,128 +4,72 @@ import graphics as gx
 
 from win32api import GetSystemMetrics
 from AlgorithmGrid import AlgorithmGrid
-from ViewConfiguration import getConfiguration
+
+from ViewConfiguration import getConfiguration, getAlgorithmsInOrder
 
 class MainWindow:
 
-    NODES_PER_SIDE = 10
+    NODES_PER_SIDE = 15
     WINDOW_NAME = "Algorithm comparator"
 
-    ALGORITHMS = [
-        'DFS',
-        'BFS',
-        'AStar'
-    ]
-
     def __init__(self):
-        self.width = int(GetSystemMetrics(0) * 0.9)
-        self.height = int(GetSystemMetrics(1) * 0.9)
+        self.width = GetSystemMetrics(0) * 0.9
+        self.height = GetSystemMetrics(1) * 0.9
+        self.algorithms = getAlgorithmsInOrder()
+
         self.setupModels()
         self.setupComponents()
-        self.run()
+        self._run()
 
     def setupModels(self):
-        self.ALGORITHM_MODELS = { algorithm: AlgorithmGrid(self.NODES_PER_SIDE) for algorithm in self.ALGORITHMS }
+        self.algorithmModels = { 
+            algorithm: AlgorithmGrid(
+                self.width,
+                self.height,
+                self.NODES_PER_SIDE,
+                algorithm
+            ) for algorithm in self.algorithms
+        }
 
     def setupComponents(self):
-        self.config = getConfiguration(self.width, self.height, self.NODES_PER_SIDE)
-        self.window = self.getWindow()
+        self.window = self._getWindow()
         
-        for algorithm in self.ALGORITHMS:
-            self.updateAlgorithmGridView(algorithm)
+        for algorithm in self.algorithms:
+            self.algorithmModels[algorithm].draw(self.window)
 
-    def getWindow(self):
+    def _getWindow(self):
         return gx.GraphWin(self.WINDOW_NAME, self.width, self.height)
 
-    def updateAlgorithmGridView(self, algorithm):
-        background = self.getAlgorithmGridBackground(algorithm)
-        background.draw(self.window)
-
-        for row_index, row in enumerate(self.ALGORITHM_MODELS[algorithm]):
-            for column_index, cell in enumerate(row):
-                cellView = self.getAlgorithmGridCell(cell, algorithm, row_index, column_index)
-                cellView.draw(self.window)
-
-
-    def getAlgorithmGridBackground(self, algorithm):
-        P1 = gx.Point(
-            self.config['algorithmColumns'][algorithm]['xOffsetUL'],
-            self.config['algorithmColumns'][algorithm]['yOffsetUL'],
-        )
-        P2 = gx.Point(
-            self.config['algorithmColumns'][algorithm]['xOffsetLR'],
-            self.config['algorithmColumns'][algorithm]['yOffsetLR'],
-        )
-
-        background = gx.Rectangle(P1, P2)
-        background.setFill('black')
-
-        return background
-
-    def getAlgorithmGridCell(self, cell, algorithm, row, column):
-        P1_X = self.config['algorithmColumns'][algorithm]['xOffsetUL'] + \
-                self.config['algorithmNodes']['offset'] + \
-                column * self.config['algorithmNodes']['size']
-        P1_Y = self.config['algorithmColumns'][algorithm]['yOffsetUL'] + \
-                self.config['algorithmNodes']['offset'] + \
-                row * self.config['algorithmNodes']['size']
-
-        P2_X = self.config['algorithmColumns'][algorithm]['xOffsetUL'] + \
-                self.config['algorithmNodes']['offset'] + \
-                self.config['algorithmNodes']['nodeSize'] + \
-                column * self.config['algorithmNodes']['size']
-        P2_Y = self.config['algorithmColumns'][algorithm]['yOffsetUL'] + \
-                self.config['algorithmNodes']['offset'] + \
-                self.config['algorithmNodes']['nodeSize'] + \
-                row * self.config['algorithmNodes']['size']
-        
-        P1 = gx.Point(P1_X, P1_Y)
-        P2 = gx.Point(P2_X, P2_Y)
-
-        cellView = gx.Rectangle(P1, P2)
-        cellView.setFill(cell.getColor())
-
-        return cellView
-
-    def run(self):
+    def _run(self):
         while True:
             clickPoint = self.window.getMouse()
-            self.handleClick(clickPoint)
+            self._handleClick(clickPoint)
         
-        
-    def handleClick(self, clickPoint):
+    def _handleClick(self, clickPoint):
         xClick, yClick = clickPoint.getX(), clickPoint.getY()
+        row, column = self._getCellClickedCoordinates(xClick, yClick)
+        print(row, column)
+        if(not (row < 0 or column < 0)):
+            for algorithm in self.algorithms:
+                cell = self.algorithmModels[algorithm][row][column]
+                cell.click()
 
-        # FIRST CHECK IF IT BELONGS TO AN ALGORITHM OR MORE MENU OPTIONS
-        algorithm = self.getAlgorithmClicked(xClick)
-        row, column = self.getCellClickedCoordinates(xClick, yClick, algorithm)
-        if(row < 0 or column < 0):
-            return
-        for algorithm in self.ALGORITHMS:
-            cell = self.ALGORITHM_MODELS[algorithm][row][column]
-            cell.click()
+    def _getCellClickedCoordinates(self, xClick, yClick):
+        config = getConfiguration(self.width, self.height, self.NODES_PER_SIDE, self.algorithms[0])
+        cellSize = config['algorithmNodes']['size']
+        
+        XPositionInAlgorithmColumn = int(xClick) % int(config['algorithmColumns']['size'])
+        XPositionInAlgorithmGrid = XPositionInAlgorithmColumn - config['algorithmColumns']['xOffsetUL']
 
-            newCellView = self.getAlgorithmGridCell(cell, algorithm, row, column)
-            newCellView.draw(self.window)
+        YPositionInAlgorithmGrid = yClick - config['algorithmColumns']['yOffsetUL']
 
-    def getAlgorithmClicked(self, xClick):
-        algorithmColumn = int(xClick / (self.width / len(self.ALGORITHMS)))
-        return self.ALGORITHMS[algorithmColumn]
+        cellColumn = math.floor( XPositionInAlgorithmGrid / cellSize )
+        cellRow = math.floor( YPositionInAlgorithmGrid / cellSize )
 
-    def getCellClickedCoordinates(self, xClick, yClick, algorithm):
+        if self._areInsideAlgorithmGrid(cellRow, cellColumn):
+            return cellRow, cellColumn
+        
+        return -1, -1
 
-        algorithmGridStartX = self.config['algorithmColumns'][algorithm]['xOffsetUL']
-        algorithmGridStartY = self.config['algorithmColumns'][algorithm]['yOffsetUL']
-        cellSize = self.config['algorithmNodes']['size']
-        gridSize = self.config['algorithmColumns']['algorithmGridSize']
-
-        column_index = math.floor((xClick - algorithmGridStartX) / cellSize)
-        row_index = math.floor((yClick - algorithmGridStartY) / cellSize)
-
-        if self.areInsideAlgorithmGrid(column_index, row_index):
-            return -1, -1
-
-        return row_index, column_index
-
-    def areInsideAlgorithmGrid(self, column, row):
-        return column < 0 or column >= self.NODES_PER_SIDE or row < 0 or row >= self.NODES_PER_SIDE
+    def _areInsideAlgorithmGrid(self, row, column):
+        return column >= 0 and column < self.NODES_PER_SIDE and row >= 0 and row < self.NODES_PER_SIDE

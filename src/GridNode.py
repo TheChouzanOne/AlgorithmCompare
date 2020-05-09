@@ -1,5 +1,7 @@
 import graphics as gx
 
+from GridNodeView import GridNodeView
+
 class GridNode:
     
     WALL_STATE = 'wall'
@@ -12,36 +14,24 @@ class GridNode:
     DISCOVERED_SPACE_COLOR = 'gray'
     VISITED_SPACE_COLOR = 'blue'
 
-    def __init__(self):
+    def __init__(self, row, column, config):
         self.state = self.UNDISCOVERED_STATE
-        self.color = self.UNDISCOVERED_SPACE_COLOR
+        self.view = GridNodeView(row, column, self.UNDISCOVERED_SPACE_COLOR, config)
 
-    def __str__(self):
-        colorMap = {
-            self.WALL_SPACE_COLOR: 'W',
-            self.UNDISCOVERED_SPACE_COLOR: 'U',
-            self.DISCOVERED_SPACE_COLOR: 'D',
-            self.VISITED_SPACE_COLOR: 'V'
-        }
-        return colorMap[self.color]
-
-    def isWall(self):
+    def _isWall(self):
         return self.state == self.WALL_STATE
 
-    def makeWall(self):
-        self.color = self.WALL_SPACE_COLOR
+    def _makeWall(self):
+        self.view.setColor(self.WALL_SPACE_COLOR)
 
-    def makeUndiscoveredSpace(self):
-        self.color = self.UNDISCOVERED_SPACE_COLOR
+    def _makeUndiscoveredSpace(self):
+        self.view.setColor(self.UNDISCOVERED_SPACE_COLOR)
 
-    def makeDiscoveredSpace(self):
-        self.color = self.DISCOVERED_SPACE_COLOR
+    def _makeDiscoveredSpace(self):
+        self.view.setColor(self.DISCOVERED_SPACE_COLOR)
 
-    def makeVisitedSpace(self):
-        self.color = self.VISITED_SPACE_COLOR
-
-    def getColor(self):
-        return self.color
+    def _makeVisitedSpace(self):
+        self.view.setColor(self.VISITED_SPACE_COLOR)
 
     def getState(self):
         return self.state
@@ -50,18 +40,21 @@ class GridNode:
         self.state = state
         self.updateColor()
 
+    def draw(self, window):
+        self.view.draw(window)
+
     def updateColor(self):
-        if self.isWall():
-            self.makeWall()
+        if self._isWall():
+            self._makeWall()
         elif self.state == self.UNDISCOVERED_STATE:
-            self.makeUndiscoveredSpace()
+            self._makeUndiscoveredSpace()
         elif self.state == self.DISCOVERED_STATE:
-            self.makeDiscoveredSpace()
+            self._makeDiscoveredSpace()
         elif self.state == self.VISITED_STATE:
-            self.makeVisitedSpace()
+            self._makeVisitedSpace()
 
     def click(self):
-        if self.isWall():
+        if self._isWall():
             self.setState(self.UNDISCOVERED_STATE)
         else:
             self.setState(self.WALL_STATE)
