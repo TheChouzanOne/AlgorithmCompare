@@ -1,26 +1,24 @@
 import math
-
 import graphics as gx
-
+from time import sleep
 from win32api import GetSystemMetrics
-from AlgorithmGrid import AlgorithmGrid
+
 from ViewConfiguration import getConfiguration, getAlgorithmsInOrder
 
-from DFSAlgorithm import DFSAlgorithm
-from BFSAlgorithm import BFSAlgorithm
+from AlgorithmGrid import AlgorithmGrid
 
-from time import sleep
+from AlgorithmFactory import createAlgorithm
+from Algorithm import Algorithm
 
 class MainWindow:
-
-    NODES_PER_SIDE = 15
+    NODES_PER_SIDE = 30
     WINDOW_NAME = "Algorithm comparator"
-    SECONDS_PER_STEP = 0.05
+    SECONDS_PER_STEP = 0.001
 
     def __init__(self):
         self.width = GetSystemMetrics(0) * 0.9
         self.height = GetSystemMetrics(1) * 0.7
-        self.algorithms = getAlgorithmsInOrder()
+        self.algorithmNames = getAlgorithmsInOrder()
 
         self.setupModels()
         self.setupComponents()
@@ -33,17 +31,19 @@ class MainWindow:
                 self.height,
                 self.NODES_PER_SIDE,
                 algorithm
-            ) for algorithm in self.algorithms
+            ) for algorithm in self.algorithmNames
         }
 
     def setupComponents(self):
         self.window = self._getWindow()
         
-        for algorithm in self.algorithms:
+        for algorithm in self.algorithmNames:
             self.algorithmModels[algorithm].draw(self.window)
 
     def _getWindow(self):
-        return gx.GraphWin(self.WINDOW_NAME, self.width, self.height)
+        window = gx.GraphWin(self.WINDOW_NAME, self.width, self.height)
+        window.setBackground('lightgray')
+        return window
 
     def _run(self):
         while True:
@@ -55,42 +55,44 @@ class MainWindow:
         xClick, yClick = clickPoint.getX(), clickPoint.getY()
         row, column = self._getCellClickedCoordinates(xClick, yClick)
         if(not (row < 0 or column < 0)):
-            for algorithm in self.algorithms:
+            for algorithm in self.algorithmNames:
                 cell = self.algorithmModels[algorithm][row][column]
                 cell.click()
         else: ## IF START CLICK ---- NEEDS TO IMPLEMENT LOGIC
             self._runAlgorithms()
 
     def _runAlgorithms(self):
-        DFS = DFSAlgorithm(self.algorithmModels['DFS'])
-        BFS = BFSAlgorithm(self.algorithmModels['BFS'])
-        for dfsResponse, bfsResponse in zip(DFS.run(), BFS.run()):
-            dfsFinished, dfsState = dfsResponse
-            bfsFinished, bfsState = bfsResponse
-            if dfsFinished:
-                if dfsState == DFSAlgorithm.NO_SOLUTION_STATE:
-                    self.algorithmModels['DFS'].setBackgroundColor('red')
-                elif dfsState == DFSAlgorithm.FINISH_STATE:
-                    self.algorithmModels['DFS'].setBackgroundColor('green')
-            if bfsFinished:
-                if bfsState == BFSAlgorithm.NO_SOLUTION_STATE:
-                    self.algorithmModels['BFS'].setBackgroundColor('red')
-                elif bfsState == BFSAlgorithm.FINISH_STATE:
-                    self.algorithmModels['BFS'].setBackgroundColor('green')
-            if all([dfsFinished, bfsFinished]):
+
+        algorithms = [
+            createAlgorithm(algorithmName, self.algorithmModels[algorithmName]) for algorithmName in self.algorithmNames
+        ]
+
+        for algorithmResponses in zip(*[algorithm.run() for algorithm in algorithms]):
+            allFinished = True
+            for algorithmResponse in algorithmResponses:
+                finished, state, algorithmName = algorithmResponse
+                if finished:
+                    if state == Algorithm.NO_SOLUTION_STATE:
+                        self.algorithmModels[algorithmName].setBackgroundColor('red')
+                    elif state == Algorithm.FINISH_STATE:
+                        self.algorithmModels[algorithmName].setBackgroundColor('green')
+                allFinished &= finished
+
+            if allFinished:
                 self.window.getMouse()
                 self._resetAlgorithmsState()
                 return
+
             sleep(self.SECONDS_PER_STEP)
     
     def _resetAlgorithmsState(self):
-        for algorithm in self.algorithms:
+        for algorithm in self.algorithmNames:
             self.algorithmModels[algorithm].resetState()
             self.algorithmModels[algorithm].setBackgroundColor('black')
 
 
     def _getCellClickedCoordinates(self, xClick, yClick):
-        config = getConfiguration(self.width, self.height, self.NODES_PER_SIDE, self.algorithms[0])
+        config = getConfiguration(self.width, self.height, self.NODES_PER_SIDE, self.algorithmNames[0])
         cellSize = config['algorithmNodes']['size']
         
         XPositionInAlgorithmColumn = int(xClick) % int(config['algorithmColumns']['size'])
