@@ -7,6 +7,11 @@ def getConfiguration(width, height, nodesPerSide, algorithm):
 
     algorithmNodeSize = algorithmGridSize / nodesPerSide
     return {
+        'algorithm': algorithm,
+        'title': {
+            'x': windowColumn * columnSize + columnSize / 2,
+            'y': 2 * yOffset / 3
+        },
         'algorithmColumns': {
             'size': columnSize,
             'algorithmGridSize': 0.8 * algorithmGridSize,

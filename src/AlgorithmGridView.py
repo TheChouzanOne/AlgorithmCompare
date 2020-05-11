@@ -4,12 +4,26 @@ class AlgorithmGridView:
     def __init__(self, width, height, nodesPerSide, config):
         self.config = config
         self.background = self._getAlgorithmGridBackground()
+        self.titleLabel = self._getTitleLabel()
 
     def draw(self, window):
+        self.titleLabel.draw(window)
         self.background.draw(window)
 
     def setBackgroundColor(self, color):
         self.background.setFill(color)
+
+    def _getTitleLabel(self):
+        anchorPoint = gx.Point(
+            self.config['title']['x'],
+            self.config['title']['y'],
+        )
+        title = gx.Text(anchorPoint, self.config['algorithm'])
+        title.setFace('times roman')
+        title.setSize(18)
+        title.setStyle('bold')
+
+        return title
 
     def _getAlgorithmGridBackground(self):
         P1 = gx.Point(
