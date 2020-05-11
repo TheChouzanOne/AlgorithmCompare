@@ -32,8 +32,10 @@ class Algorithm(metaclass=ABCMeta):
 
         for rowDifference in difference:
             for columnDifference in difference:
-                if not (rowDifference or columnDifference): # Diferrent than 0,0
-                    continue 
+                # if not (rowDifference or columnDifference): # FOR DIAGONAL MOVES
+                #     continue 
+                if not abs(rowDifference) + abs(columnDifference) == 1: # FOR ORTHOGONAL MOVES
+                    continue
 
                 column = gridNode.column + columnDifference
                 row = gridNode.row + rowDifference

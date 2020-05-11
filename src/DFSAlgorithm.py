@@ -11,7 +11,7 @@ class DFSAlgorithm(Algorithm):
 
     def runAlgorithm(self):
         finished = False
-        stack = [self.grid[0][0]]
+        stack = [self.grid.getStartNode()]
 
         isEmpty = lambda l: len(l) == 0
 
@@ -28,6 +28,7 @@ class DFSAlgorithm(Algorithm):
 
             for undiscoveredNeighbor in undiscoveredNeighbors:
                 stack.append(undiscoveredNeighbor)
+                undiscoveredNeighbor.setParent(currentNode)
                 undiscoveredNeighbor.setState(GridNode.DISCOVERED_STATE)
 
             yield (False, self.IN_PROGRESS_STATE)

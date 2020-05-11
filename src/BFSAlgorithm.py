@@ -14,7 +14,7 @@ class BFSAlgorithm(Algorithm):
     def runAlgorithm(self):
         finished = False
         queue = Queue()
-        queue.put(self.grid[0][0])
+        queue.put(self.grid.getStartNode())
 
         while not queue.empty():
             currentNode = queue.get()
@@ -29,6 +29,7 @@ class BFSAlgorithm(Algorithm):
 
             for undiscoveredNeighbor in undiscoveredNeighbors:
                 queue.put(undiscoveredNeighbor)
+                undiscoveredNeighbor.setParent(currentNode)
                 undiscoveredNeighbor.setState(GridNode.DISCOVERED_STATE)
 
             yield (False, self.IN_PROGRESS_STATE)

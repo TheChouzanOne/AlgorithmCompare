@@ -11,9 +11,12 @@ from AlgorithmFactory import createAlgorithm
 from Algorithm import Algorithm
 
 class MainWindow:
-    NODES_PER_SIDE = 30
+    NODES_PER_SIDE = 15
     WINDOW_NAME = "Algorithm comparator"
     SECONDS_PER_STEP = 0.001
+
+    INITIAL_POSITION = (3, 7)
+    FINISH_POSITION = (5, 10)
 
     def __init__(self):
         self.width = GetSystemMetrics(0) * 0.9
@@ -30,7 +33,9 @@ class MainWindow:
                 self.width,
                 self.height,
                 self.NODES_PER_SIDE,
-                algorithm
+                algorithm,
+                self.INITIAL_POSITION,
+                self.FINISH_POSITION
             ) for algorithm in self.algorithmNames
         }
 
@@ -75,6 +80,7 @@ class MainWindow:
                     if state == Algorithm.NO_SOLUTION_STATE:
                         self.algorithmModels[algorithmName].setBackgroundColor('red')
                     elif state == Algorithm.FINISH_STATE:
+                        self.algorithmModels[algorithmName].colorPath()
                         self.algorithmModels[algorithmName].setBackgroundColor('green')
                 allFinished &= finished
 

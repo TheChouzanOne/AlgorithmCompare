@@ -12,6 +12,7 @@ class GridNode:
     VISITED_SPACE_COLOR = 'blue'
     START_SPACE_COLOR = 'yellow'
     FINISH_SPACE_COLOR = 'red'
+    PATH_SPACE_COLOR = 'purple'
 
     def __init__(self, row, column, config):
         self.row = row
@@ -19,6 +20,8 @@ class GridNode:
         self.state = self.UNDISCOVERED_STATE
         self.start = False
         self.finish = False
+        self.path = False
+        self.parent = None
         
         self.view = GridNodeView(row, column, self.UNDISCOVERED_SPACE_COLOR, config)
 
@@ -47,6 +50,9 @@ class GridNode:
 
     def _makeFinishSpace(self):
         self.view.setColor(self.FINISH_SPACE_COLOR)
+
+    def _makePathSpace(self):
+        self.view.setColor(self.PATH_SPACE_COLOR)
     
     def setStart(self):
         self.start = True
@@ -56,11 +62,18 @@ class GridNode:
         self.finish = True
         self.updateColor()
 
+    def setPath(self):
+        self.path = True
+        self.updateColor()
+
     def isStart(self):
         return self.start
 
     def isFinish(self):
         return self.finish
+
+    def _isPath(self):
+        return self.path
 
     def getState(self):
         return self.state
@@ -79,6 +92,8 @@ class GridNode:
             self._makeFinishSpace()
         elif self.isWall():
             self._makeWall()
+        elif self._isPath():
+            self._makePathSpace()
         elif self.state == self.UNDISCOVERED_STATE:
             self._makeUndiscoveredSpace()
         elif self.state == self.DISCOVERED_STATE:
@@ -93,3 +108,13 @@ class GridNode:
             self.setState(self.UNDISCOVERED_STATE)
         else:
             self.setState(self.WALL_STATE)
+
+    def setParent(self, node):
+        self.parent = node
+
+    def resetState(self):
+        if self.isWall():
+            return
+        self.path = False
+        self.parent = None
+        self.setState(GridNode.UNDISCOVERED_STATE)

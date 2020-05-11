@@ -3,9 +3,12 @@ from AlgorithmGridView import AlgorithmGridView
 from ViewConfiguration import getConfiguration
 
 class AlgorithmGrid:
-    def __init__(self, width, height, nodesPerSide, algorithm):
+    def __init__(self, width, height, nodesPerSide, algorithm, startPosition = (0,0), finishPosition = None):
         self.nodesPerSide = nodesPerSide
         self.config = getConfiguration(width, height, nodesPerSide, algorithm)
+
+        self.startPosition = startPosition
+        self.finishPosition = finishPosition if finishPosition is not None else (nodesPerSide - 1, nodesPerSide - 1)
         
         self.grid = self._getInitialGrid()
         self.view = AlgorithmGridView(width, height, nodesPerSide, self.config)
@@ -22,6 +25,18 @@ class AlgorithmGrid:
 
         return gridString
 
+    def colorPath(self):
+        finishRow = self.finishPosition[0]
+        finishCol = self.finishPosition[1]
+        FINISH_NODE = self.grid[finishRow][finishCol]
+
+        iterNode = FINISH_NODE.parent
+
+        while iterNode.parent is not None:
+            iterNode.setPath()
+            iterNode = iterNode.parent
+
+
     def setBackgroundColor(self, color):
         self.view.setBackgroundColor(color)
 
@@ -34,10 +49,8 @@ class AlgorithmGrid:
     def resetState(self):
         for row in self.grid:
             for cell in row:
-                if cell.isWall():
-                    continue
-                cell.setState(GridNode.UNDISCOVERED_STATE)
-
+                cell.resetState()
+        
     def _getInitialGrid(self):
         grid = [ 
             [
@@ -45,10 +58,21 @@ class AlgorithmGrid:
             ] for row in range(self.nodesPerSide)
         ]
 
-        grid[0][0].setStart()
-        grid[self.nodesPerSide-1][self.nodesPerSide-1].setFinish()
+        startRow = self.startPosition[0]
+        startCol = self.startPosition[1]
+        finishRow = self.finishPosition[0]
+        finishCol = self.finishPosition[1]
+
+        grid[startRow][startCol].setStart()
+        grid[finishRow][finishCol].setFinish()
 
         return grid
+
+    def getStartNode(self):
+        startRow = self.startPosition[0]
+        startCol = self.startPosition[1]
+
+        return self.grid[startRow][startCol]
     
 
 

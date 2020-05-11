@@ -16,8 +16,9 @@ class AStarAlgorithm(Algorithm):
         self.counter = count()
 
     def _h(self, node):
-        FINISH_NODE_ROW = self.grid.nodesPerSide - 1
-        FINISH_NODE_COLUMN = self.grid.nodesPerSide - 1
+        FINISH_NODE_POSITION = self.grid.finishPosition
+        FINISH_NODE_ROW = self.grid.finishPosition[0]
+        FINISH_NODE_COLUMN = self.grid.finishPosition[1]
 
         return abs(node.row - FINISH_NODE_ROW) + abs(node.column - FINISH_NODE_COLUMN)
 
@@ -30,7 +31,7 @@ class AStarAlgorithm(Algorithm):
     def runAlgorithm(self):
         finished = False
         pQueue = []
-        startNode = self.grid[0][0]
+        startNode = self.grid.getStartNode()
         initialGValue = 0
         startNodeCost = self._f(startNode, initialGValue)
         heappush(pQueue, (startNodeCost, initialGValue, next(self.counter), startNode))
@@ -53,6 +54,8 @@ class AStarAlgorithm(Algorithm):
                 undiscoveredNeighborCost = self._f(undiscoveredNeighbor, undiscoveredNeighborGValue)
 
                 heappush(pQueue, (undiscoveredNeighborCost, undiscoveredNeighborGValue, next(self.counter), undiscoveredNeighbor) )
+                
+                undiscoveredNeighbor.setParent(currentNode)
                 undiscoveredNeighbor.setState(GridNode.DISCOVERED_STATE)
 
             yield (False, self.IN_PROGRESS_STATE)
