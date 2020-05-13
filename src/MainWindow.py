@@ -4,19 +4,18 @@ from time import sleep
 from win32api import GetSystemMetrics
 
 from ViewConfiguration import getConfiguration, getAlgorithmsInOrder
-
+from Button import Button
 from AlgorithmGrid import AlgorithmGrid
-
 from AlgorithmFactory import createAlgorithm
 from Algorithm import Algorithm
 
 class MainWindow:
-    NODES_PER_SIDE = 15
+    NODES_PER_SIDE = 35
     WINDOW_NAME = "Algorithm comparator"
     SECONDS_PER_STEP = 0.001
 
     INITIAL_POSITION = (3, 7)
-    FINISH_POSITION = (5, 10)
+    FINISH_POSITION = (10, 13)
 
     def __init__(self):
         self.width = GetSystemMetrics(0) * 0.9
@@ -24,7 +23,7 @@ class MainWindow:
         self.algorithmNames = getAlgorithmsInOrder()
 
         self.setupModels()
-        self.setupComponents()
+        self._setupComponents()
         self._run()
 
     def setupModels(self):
@@ -39,11 +38,29 @@ class MainWindow:
             ) for algorithm in self.algorithmNames
         }
 
-    def setupComponents(self):
+    def _setupComponents(self):
         self.window = self._getWindow()
-        
+
+        self._setupGrids()
+        self._setupStartButton()
+
+    def _setupGrids(self):
         for algorithm in self.algorithmNames:
             self.algorithmModels[algorithm].draw(self.window)
+
+    def _setupStartButton(self):
+        size = (
+            self.width / 10,
+            self.height / 10
+        )
+
+        position = (
+            (self.width - size[0]) / 2,
+            13 * self.height / 15
+        )
+
+        self.startButton = Button('Run algorithms', 'gray', position, size, self._runAlgorithms)
+        self.startButton.draw(self.window)
 
     def _getWindow(self):
         window = gx.GraphWin(self.WINDOW_NAME, self.width, self.height)
@@ -56,15 +73,15 @@ class MainWindow:
             self._handleClick(clickPoint)
         
     def _handleClick(self, clickPoint):
-        ## IF GRID CLICK
         xClick, yClick = clickPoint.getX(), clickPoint.getY()
-        row, column = self._getCellClickedCoordinates(xClick, yClick)
-        if(not (row < 0 or column < 0)):
-            for algorithm in self.algorithmNames:
-                cell = self.algorithmModels[algorithm][row][column]
-                cell.click()
-        else: ## IF START CLICK ---- NEEDS TO IMPLEMENT LOGIC
-            self._runAlgorithms()
+        if self.startButton.isClicked(xClick, yClick):
+            self.startButton.click()
+        else:
+            row, column = self._getCellClickedCoordinates(xClick, yClick)
+            if(not (row < 0 or column < 0)):
+                for algorithm in self.algorithmNames:
+                    cell = self.algorithmModels[algorithm][row][column]
+                    cell.click()
 
     def _runAlgorithms(self):
 
