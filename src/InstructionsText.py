@@ -5,7 +5,7 @@ class Instructions:
         self.text = text
         self.position = position
         self.color = color 
-        
+
         self.instructionText = self._getText()
 
     def draw(self, window):
@@ -19,7 +19,7 @@ class Instructions:
         anchor = gx.Point(self.position[0], self.position[1])
         textView = gx.Text(anchor, "Instructions: %s"%self.text)
         textView.setFace('times roman')
-        textView.setSize(14)
+        textView.setSize(18)
         textView.setStyle("bold")
         textView.setTextColor(self.color)
 
