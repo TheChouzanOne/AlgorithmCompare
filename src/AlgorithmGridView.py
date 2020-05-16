@@ -10,6 +10,10 @@ class AlgorithmGridView:
         self.titleLabel.draw(window)
         self.background.draw(window)
 
+    def undraw(self):
+        self.titleLabel.undraw()
+        self.background.undraw()
+
     def setBackgroundColor(self, color):
         self.background.setFill(color)
 

@@ -1,4 +1,6 @@
 import math
+import json
+
 import graphics as gx
 from time import sleep
 from win32api import GetSystemMetrics
@@ -8,16 +10,17 @@ from Button import Button
 from AlgorithmGrid import AlgorithmGrid
 from AlgorithmFactory import createAlgorithm
 from Algorithm import Algorithm
+from GridJsonSerializer import GridJsonSerializer
 
-from tkinter.filedialog import asksaveasfilename
+from tkinter.filedialog import asksaveasfilename, askopenfilename 
 
 class MainWindow:
-    NODES_PER_SIDE = 10
+    nodesPerSide = 15
     WINDOW_NAME = "Algorithm comparator"
     SECONDS_PER_STEP = 0.001
 
-    INITIAL_POSITION = (3, 7)
-    FINISH_POSITION = (9, 9)
+    initialPosition = (3, 7)
+    finishPosition = (9, 9)
 
     def __init__(self):
         self.width = GetSystemMetrics(0) * 0.9
@@ -33,10 +36,10 @@ class MainWindow:
             algorithm: AlgorithmGrid(
                 self.width,
                 self.height,
-                self.NODES_PER_SIDE,
+                self.nodesPerSide,
                 algorithm,
-                self.INITIAL_POSITION,
-                self.FINISH_POSITION
+                self.initialPosition,
+                self.finishPosition
             ) for algorithm in self.algorithmNames
         }
 
@@ -46,6 +49,7 @@ class MainWindow:
         self._setupGrids()
         self._setupStartButton()
         self._setupSaveButton()
+        self._setupLoadButton()
 
     def _setupGrids(self):
         for algorithm in self.algorithmNames:
@@ -79,6 +83,20 @@ class MainWindow:
         self.saveButton = Button('Save maze', 'gray', position, size, self._saveMaze)
         self.saveButton.draw(self.window)
 
+    def _setupLoadButton(self):
+        size = (
+            self.width / 10,
+            self.height / 10
+        )
+
+        position = (
+            (self.width - size[0]) / 2 + 2 * (size[0] + 10),
+            13 * self.height / 15
+        )
+
+        self.loadButton = Button('Load maze', 'gray', position, size, self._loadMaze)
+        self.loadButton.draw(self.window)
+
     def _getWindow(self):
         window = gx.GraphWin(self.WINDOW_NAME, self.width, self.height)
         window.setBackground('lightgray')
@@ -93,6 +111,8 @@ class MainWindow:
         xClick, yClick = clickPoint.getX(), clickPoint.getY()
         if self.startButton.isClicked(xClick, yClick):
             self.startButton.click()
+        elif self.loadButton.isClicked(xClick, yClick):
+            self.loadButton.click()
         elif self.saveButton.isClicked(xClick, yClick):
             self.saveButton.click()
         else:
@@ -102,23 +122,37 @@ class MainWindow:
                     cell = self.algorithmModels[algorithm][row][column]
                     cell.click()
 
-    def _saveMaze(self):
-        DEFAULT_EXTENSION = ".json"
-        filetypes = (
-            ("JSON files", DEFAULT_EXTENSION),
-            ("All files", ".*")
-        )
-        filename = asksaveasfilename(
-            filetypes = filetypes,
-            defaultextension=DEFAULT_EXTENSION
-        )
+    def _loadMaze(self):
+        jsonGrid = GridJsonSerializer.loadFile()
+        
+        if jsonGrid is None:
+            return
 
+        for algorithm in self.algorithmNames:
+            self.algorithmModels[algorithm].undraw()
+
+        self.nodesPerSide = jsonGrid['nodesPerSide']
+        self.initialPosition = jsonGrid['startPosition']
+        self.finishPosition = jsonGrid['finishPosition']
+
+        self.algorithmModels = { 
+            algorithm: AlgorithmGrid(
+                self.width,
+                self.height,
+                self.nodesPerSide,
+                algorithm,
+                self.initialPosition,
+                self.finishPosition,
+                jsonGrid['grid']
+            ) for algorithm in self.algorithmNames
+        }
+
+        self._setupGrids()
+
+    def _saveMaze(self):
         anyAlgorithm = self.algorithmNames[0]
         anyGrid = self.algorithmModels[anyAlgorithm]
-        jsonGrid = anyGrid.toJson()
-
-        with open(filename, 'w') as f:
-            f.write(jsonGrid)
+        GridJsonSerializer.saveToJson(anyGrid)
         
 
     def _runAlgorithms(self):
@@ -153,7 +187,7 @@ class MainWindow:
 
 
     def _getCellClickedCoordinates(self, xClick, yClick):
-        config = getConfiguration(self.width, self.height, self.NODES_PER_SIDE, self.algorithmNames[0])
+        config = getConfiguration(self.width, self.height, self.nodesPerSide, self.algorithmNames[0])
         cellSize = config['algorithmNodes']['size']
         
         XPositionInAlgorithmColumn = int(xClick) % int(config['algorithmColumns']['size'])
@@ -170,4 +204,4 @@ class MainWindow:
         return -1, -1
 
     def _areInsideAlgorithmGrid(self, row, column):
-        return column >= 0 and column < self.NODES_PER_SIDE and row >= 0 and row < self.NODES_PER_SIDE
+        return column >= 0 and column < self.nodesPerSide and row >= 0 and row < self.nodesPerSide

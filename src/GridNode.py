@@ -85,6 +85,9 @@ class GridNode:
     def draw(self, window):
         self.view.draw(window)
 
+    def undraw(self):
+        self.view.undraw()
+
     def updateColor(self):
         if self.isStart():
             self._makeStartSpace()

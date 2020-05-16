@@ -4,14 +4,14 @@ from ViewConfiguration import getConfiguration
 import json
 
 class AlgorithmGrid:
-    def __init__(self, width, height, nodesPerSide, algorithm, startPosition = (0,0), finishPosition = None):
+    def __init__(self, width, height, nodesPerSide, algorithm, startPosition = (0,0), finishPosition = None, initialGrid=None):
         self.nodesPerSide = nodesPerSide
         self.config = getConfiguration(width, height, nodesPerSide, algorithm)
 
         self.startPosition = startPosition
         self.finishPosition = finishPosition if finishPosition is not None else (nodesPerSide - 1, nodesPerSide - 1)
         
-        self.grid = self._getInitialGrid()
+        self.grid = self._getInitialGrid(initialGrid)
         self.view = AlgorithmGridView(width, height, nodesPerSide, self.config)
 
     def __getitem__(self, index):
@@ -47,17 +47,29 @@ class AlgorithmGrid:
             for cell in row:
                 cell.draw(window)
 
+    def undraw(self):
+        self.view.undraw()
+        for row in self.grid:
+            for cell in row:
+                cell.undraw()
+
     def resetState(self):
         for row in self.grid:
             for cell in row:
                 cell.resetState()
         
-    def _getInitialGrid(self):
+    def _getInitialGrid(self, initialGrid):
         grid = [ 
             [
                 GridNode(row, column, self.config) for column in range(self.nodesPerSide)
             ] for row in range(self.nodesPerSide)
         ]
+
+        if initialGrid is not None:
+            for row in range(self.nodesPerSide):
+                for col in range(self.nodesPerSide):
+                    if initialGrid[row][col] == 'W':
+                        grid[row][col].setState(GridNode.WALL_STATE)
 
         startRow = self.startPosition[0]
         startCol = self.startPosition[1]

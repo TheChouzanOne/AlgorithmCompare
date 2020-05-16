@@ -26,7 +26,7 @@ class GridJsonSerializer:
 
 
     @staticmethod
-    def loadFile(algorithm):
+    def loadFile():
         Tk().withdraw()
         filename = askopenfilename(
             defaultextension=GridJsonSerializer.FILE_EXTENSION, 
@@ -34,28 +34,18 @@ class GridJsonSerializer:
                 ('JSON', GridJsonSerializer.FILE_EXTENSION), 
                 ('All files', '*')
         ])
+
+        if not filename:
+            return None
+
         with open(filename, 'r') as f:
             content = f.read()
             jsonObject = json.loads(content)
 
-        algorithmGrid = AlgorithmGrid(
-            jsonObject['width'],
-            jsonObject['height'],
-            jsonObject['nodesPerSide'],
-            algorithm,
-            jsonObject['startPosition'],
-            jsonObject['finishPosition']
-        )
-        
-        algorithmGrid.setCellsState(jsonObject['grid'])
-
-        return algorithmGrid
-        
+        return jsonObject
 
     def convertGridToJson(algorithmGrid):
         jsonObject = {
-            'width': algorithmGrid.width,
-            'height': algorithmGrid.height,
             'nodesPerSide': algorithmGrid.nodesPerSide,
             'startPosition': algorithmGrid.startPosition,
             'finishPosition': algorithmGrid.finishPosition,

@@ -14,8 +14,10 @@ class GridNodeView:
         self.Rectangle.setFill(color)
 
     def draw(self, window):
-        # Not sure if I have to redraw for color to update
         self.Rectangle.draw(window)
+
+    def undraw(self):
+        self.Rectangle.undraw()
 
     def _getCellPosition(self, row, column):
         return {
