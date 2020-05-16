@@ -6,7 +6,10 @@ from time import sleep
 from win32api import GetSystemMetrics
 
 from ViewConfiguration import getConfiguration, getAlgorithmsInOrder
+
 from Button import Button
+from InstructionsText import Instructions
+
 from AlgorithmGrid import AlgorithmGrid
 from AlgorithmFactory import createAlgorithm
 from Algorithm import Algorithm
@@ -20,6 +23,8 @@ class MainWindow:
     SECONDS_PER_STEP = 0.001
 
     initialPosition = (3, 7)
+
+    WALL_INSTRUCTIONS = "Click on grid to add walls or use the buttons"
 
     def __init__(self):
         self.width = GetSystemMetrics(0) * 0.9
@@ -50,10 +55,24 @@ class MainWindow:
         self._setupLoadButton()
         self._setupChangeFinishButton()
         self._setupChangeStartButton()
+        self._setupInstructions()
 
     def _setupGrids(self):
         for algorithm in self.algorithmNames:
             self.algorithmModels[algorithm].draw(self.window)
+
+    def _setupInstructions(self):
+        position = (
+            self.width / 2,
+            self.height * 0.8 / 10
+        )
+
+        self.instructions = Instructions(
+            self.WALL_INSTRUCTIONS, 
+            position
+        )
+
+        self.instructions.draw(self.window)
 
     def _setupStartButton(self):
         size = self._getButtonSize()
@@ -103,16 +122,26 @@ class MainWindow:
         )
 
     def _changeFinishNode(self):
+        instructionsText = "Click on a node to change the finish node"
+        self.instructions.setText(instructionsText)
+
         row, column = self._getGridClickCoordinates()
         
         for algorithm in self.algorithmNames:
             self.algorithmModels[algorithm].updateFinishPosition(row, column)
 
+        self.instructions.setText(self.WALL_INSTRUCTIONS)
+
     def _changeStartNode(self):
+        instructionsText = "Click on a node to change the start node"
+        self.instructions.setText(instructionsText)
+
         row, column = self._getGridClickCoordinates()
         
         for algorithm in self.algorithmNames:
             self.algorithmModels[algorithm].updateStartPosition(row, column)
+
+        self.instructions.setText(self.WALL_INSTRUCTIONS)
 
     def _getGridClickCoordinates(self):
         while(True):
@@ -204,8 +233,10 @@ class MainWindow:
                 allFinished &= finished
 
             if allFinished:
+                self.instructions.setText("Click anywhere to reset algorithms")
                 self.window.getMouse()
                 self._resetAlgorithmsState()
+                self.instructions.setText(self.WALL_INSTRUCTIONS)
                 return
 
             sleep(self.SECONDS_PER_STEP)
