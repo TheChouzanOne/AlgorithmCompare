@@ -43,6 +43,12 @@ class AlgorithmGrid:
         self.finishPosition = (row, col)
         self.grid[row][col].setFinish()
 
+    def updateStartPosition(self, row, col):
+        currentRow, currentCol = self.startPosition[0], self.startPosition[1]
+        self.grid[currentRow][currentCol].setStart(False)
+        self.startPosition = (row, col)
+        self.grid[row][col].setStart()
+
     def setBackgroundColor(self, color):
         self.view.setBackgroundColor(color)
 

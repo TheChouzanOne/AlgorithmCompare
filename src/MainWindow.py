@@ -49,68 +49,72 @@ class MainWindow:
         self._setupSaveButton()
         self._setupLoadButton()
         self._setupChangeFinishButton()
+        self._setupChangeStartButton()
 
     def _setupGrids(self):
         for algorithm in self.algorithmNames:
             self.algorithmModels[algorithm].draw(self.window)
 
     def _setupStartButton(self):
-        size = (
-            self.width / 10,
-            self.height / 10
-        )
-
-        position = (
-            (self.width - size[0]) / 2,
-            13 * self.height / 15
-        )
+        size = self._getButtonSize()
+        position = self._getButtonPosition(size, 0)
 
         self.startButton = Button('Run algorithms', 'gray', position, size, self._runAlgorithms)
         self.startButton.draw(self.window)
 
     def _setupSaveButton(self):
-        size = (
-            self.width / 10,
-            self.height / 10
-        )
-
-        position = (
-            (self.width - size[0]) / 2 + size[0] + 10,
-            13 * self.height / 15
-        )
+        size = self._getButtonSize()
+        position = self._getButtonPosition(size, 1)
 
         self.saveButton = Button('Save maze', 'gray', position, size, self._saveMaze)
         self.saveButton.draw(self.window)
 
     def _setupLoadButton(self):
-        size = (
-            self.width / 10,
-            self.height / 10
-        )
-
-        position = (
-            (self.width - size[0]) / 2 + 2 * (size[0] + 10),
-            13 * self.height / 15
-        )
+        size = self._getButtonSize()
+        position = self._getButtonPosition(size, 2)
 
         self.loadButton = Button('Load maze', 'gray', position, size, self._loadMaze)
         self.loadButton.draw(self.window)
 
     def _setupChangeFinishButton(self):
-        size = (
-            self.width / 10,
-            self.height / 10
-        )
-
-        position = (
-            (self.width - size[0]) / 2 - (size[0] + 10),
-            13 * self.height / 15
-        )
+        size = self._getButtonSize()
+        position = self._getButtonPosition(size, -1)
 
         self.changeFinishButton = Button('Change finish\n cell', 'red', position, size, self._changeFinishNode)
         self.changeFinishButton.draw(self.window)
 
+    def _setupChangeStartButton(self):
+        size = self._getButtonSize()
+        position = self._getButtonPosition(size, -2)
+
+        self.changeStartButton = Button('Change start\n cell', 'yellow', position, size, self._changeStartNode)
+        self.changeStartButton.draw(self.window)
+
+    def _getButtonSize(self):
+        return (
+            self.width / 10,
+            self.height / 10
+        )
+
+    def _getButtonPosition(self, size, offSetFromCenter):
+        return (
+            (self.width - size[0]) / 2 + offSetFromCenter * (size[0] + 10),
+            13 * self.height / 15
+        )
+
     def _changeFinishNode(self):
+        row, column = self._getGridClickCoordinates()
+        
+        for algorithm in self.algorithmNames:
+            self.algorithmModels[algorithm].updateFinishPosition(row, column)
+
+    def _changeStartNode(self):
+        row, column = self._getGridClickCoordinates()
+        
+        for algorithm in self.algorithmNames:
+            self.algorithmModels[algorithm].updateStartPosition(row, column)
+
+    def _getGridClickCoordinates(self):
         while(True):
             mouseClick = self.window.getMouse()
             xClick, yClick = mouseClick.getX(), mouseClick.getY()
@@ -118,8 +122,7 @@ class MainWindow:
             if row != -1 and column != -1:
                 break
         
-        for algorithm in self.algorithmNames:
-            self.algorithmModels[algorithm].updateFinishPosition(row, column)
+        return row, column
 
     def _getWindow(self):
         window = gx.GraphWin(self.WINDOW_NAME, self.width, self.height)
@@ -141,6 +144,8 @@ class MainWindow:
             self.saveButton.click()
         elif self.changeFinishButton.isClicked(xClick, yClick):
             self.changeFinishButton.click()
+        elif self.changeStartButton.isClicked(xClick, yClick):
+            self.changeStartButton.click()
         else:
             row, column = self._getCellClickedCoordinates(xClick, yClick)
             if(not (row < 0 or column < 0)):

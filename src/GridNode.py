@@ -56,7 +56,7 @@ class GridNode:
     
     def setStart(self, start = True):
         self.start = start
-        self.updateColor()
+        self.setState(self.UNDISCOVERED_STATE)
 
     def setFinish(self, finish = True):
         self.finish = finish
