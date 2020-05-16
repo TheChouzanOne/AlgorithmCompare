@@ -9,13 +9,15 @@ from AlgorithmGrid import AlgorithmGrid
 from AlgorithmFactory import createAlgorithm
 from Algorithm import Algorithm
 
+from tkinter.filedialog import asksaveasfilename
+
 class MainWindow:
-    NODES_PER_SIDE = 35
+    NODES_PER_SIDE = 10
     WINDOW_NAME = "Algorithm comparator"
     SECONDS_PER_STEP = 0.001
 
     INITIAL_POSITION = (3, 7)
-    FINISH_POSITION = (10, 13)
+    FINISH_POSITION = (9, 9)
 
     def __init__(self):
         self.width = GetSystemMetrics(0) * 0.9
@@ -43,6 +45,7 @@ class MainWindow:
 
         self._setupGrids()
         self._setupStartButton()
+        self._setupSaveButton()
 
     def _setupGrids(self):
         for algorithm in self.algorithmNames:
@@ -62,6 +65,20 @@ class MainWindow:
         self.startButton = Button('Run algorithms', 'gray', position, size, self._runAlgorithms)
         self.startButton.draw(self.window)
 
+    def _setupSaveButton(self):
+        size = (
+            self.width / 10,
+            self.height / 10
+        )
+
+        position = (
+            (self.width - size[0]) / 2 + size[0] + 10,
+            13 * self.height / 15
+        )
+
+        self.saveButton = Button('Save maze', 'gray', position, size, self._saveMaze)
+        self.saveButton.draw(self.window)
+
     def _getWindow(self):
         window = gx.GraphWin(self.WINDOW_NAME, self.width, self.height)
         window.setBackground('lightgray')
@@ -76,12 +93,33 @@ class MainWindow:
         xClick, yClick = clickPoint.getX(), clickPoint.getY()
         if self.startButton.isClicked(xClick, yClick):
             self.startButton.click()
+        elif self.saveButton.isClicked(xClick, yClick):
+            self.saveButton.click()
         else:
             row, column = self._getCellClickedCoordinates(xClick, yClick)
             if(not (row < 0 or column < 0)):
                 for algorithm in self.algorithmNames:
                     cell = self.algorithmModels[algorithm][row][column]
                     cell.click()
+
+    def _saveMaze(self):
+        DEFAULT_EXTENSION = ".json"
+        filetypes = (
+            ("JSON files", DEFAULT_EXTENSION),
+            ("All files", ".*")
+        )
+        filename = asksaveasfilename(
+            filetypes = filetypes,
+            defaultextension=DEFAULT_EXTENSION
+        )
+
+        anyAlgorithm = self.algorithmNames[0]
+        anyGrid = self.algorithmModels[anyAlgorithm]
+        jsonGrid = anyGrid.toJson()
+
+        with open(filename, 'w') as f:
+            f.write(jsonGrid)
+        
 
     def _runAlgorithms(self):
 

@@ -1,6 +1,7 @@
 from GridNode import GridNode
 from AlgorithmGridView import AlgorithmGridView
 from ViewConfiguration import getConfiguration
+import json
 
 class AlgorithmGrid:
     def __init__(self, width, height, nodesPerSide, algorithm, startPosition = (0,0), finishPosition = None):
@@ -74,6 +75,25 @@ class AlgorithmGrid:
 
         return self.grid[startRow][startCol]
     
+    def toJson(self):
+        jsonDict = {
+            'nodesPerSide': self.nodesPerSide,
+            'startPosition': self.startPosition,
+            'finishPosition': self.finishPosition
+        }
+
+        grid = [
+            ['W' if cell.isWall() \
+                else 'U' \
+                for cell in row
+            ] for row in self.grid
+        ]
+
+        jsonDict['grid'] = grid
+
+        return json.dumps(jsonDict)
+
+
 
 
         
