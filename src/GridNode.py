@@ -54,13 +54,13 @@ class GridNode:
     def _makePathSpace(self):
         self.view.setColor(self.PATH_SPACE_COLOR)
     
-    def setStart(self):
-        self.start = True
+    def setStart(self, start = True):
+        self.start = start
         self.updateColor()
 
-    def setFinish(self):
-        self.finish = True
-        self.updateColor()
+    def setFinish(self, finish = True):
+        self.finish = finish
+        self.setState(self.UNDISCOVERED_STATE)
 
     def setPath(self):
         self.path = True

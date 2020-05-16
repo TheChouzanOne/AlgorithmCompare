@@ -20,7 +20,6 @@ class MainWindow:
     SECONDS_PER_STEP = 0.001
 
     initialPosition = (3, 7)
-    finishPosition = (9, 9)
 
     def __init__(self):
         self.width = GetSystemMetrics(0) * 0.9
@@ -38,8 +37,7 @@ class MainWindow:
                 self.height,
                 self.nodesPerSide,
                 algorithm,
-                self.initialPosition,
-                self.finishPosition
+                self.initialPosition
             ) for algorithm in self.algorithmNames
         }
 
@@ -50,6 +48,7 @@ class MainWindow:
         self._setupStartButton()
         self._setupSaveButton()
         self._setupLoadButton()
+        self._setupChangeFinishButton()
 
     def _setupGrids(self):
         for algorithm in self.algorithmNames:
@@ -97,6 +96,31 @@ class MainWindow:
         self.loadButton = Button('Load maze', 'gray', position, size, self._loadMaze)
         self.loadButton.draw(self.window)
 
+    def _setupChangeFinishButton(self):
+        size = (
+            self.width / 10,
+            self.height / 10
+        )
+
+        position = (
+            (self.width - size[0]) / 2 - (size[0] + 10),
+            13 * self.height / 15
+        )
+
+        self.changeFinishButton = Button('Change finish\n cell', 'red', position, size, self._changeFinishNode)
+        self.changeFinishButton.draw(self.window)
+
+    def _changeFinishNode(self):
+        while(True):
+            mouseClick = self.window.getMouse()
+            xClick, yClick = mouseClick.getX(), mouseClick.getY()
+            row, column = self._getCellClickedCoordinates(xClick, yClick)
+            if row != -1 and column != -1:
+                break
+        
+        for algorithm in self.algorithmNames:
+            self.algorithmModels[algorithm].updateFinishPosition(row, column)
+
     def _getWindow(self):
         window = gx.GraphWin(self.WINDOW_NAME, self.width, self.height)
         window.setBackground('lightgray')
@@ -115,6 +139,8 @@ class MainWindow:
             self.loadButton.click()
         elif self.saveButton.isClicked(xClick, yClick):
             self.saveButton.click()
+        elif self.changeFinishButton.isClicked(xClick, yClick):
+            self.changeFinishButton.click()
         else:
             row, column = self._getCellClickedCoordinates(xClick, yClick)
             if(not (row < 0 or column < 0)):
@@ -133,7 +159,6 @@ class MainWindow:
 
         self.nodesPerSide = jsonGrid['nodesPerSide']
         self.initialPosition = jsonGrid['startPosition']
-        self.finishPosition = jsonGrid['finishPosition']
 
         self.algorithmModels = { 
             algorithm: AlgorithmGrid(
@@ -142,7 +167,7 @@ class MainWindow:
                 self.nodesPerSide,
                 algorithm,
                 self.initialPosition,
-                self.finishPosition,
+                jsonGrid['finishPosition'],
                 jsonGrid['grid']
             ) for algorithm in self.algorithmNames
         }

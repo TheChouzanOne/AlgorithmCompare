@@ -37,6 +37,11 @@ class AlgorithmGrid:
             iterNode.setPath()
             iterNode = iterNode.parent
 
+    def updateFinishPosition(self, row, col):
+        currentRow, currentCol = self.finishPosition[0], self.finishPosition[1]
+        self.grid[currentRow][currentCol].setFinish(False)
+        self.finishPosition = (row, col)
+        self.grid[row][col].setFinish()
 
     def setBackgroundColor(self, color):
         self.view.setBackgroundColor(color)
