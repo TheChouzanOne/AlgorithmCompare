@@ -22,8 +22,6 @@ class MainWindow:
     WINDOW_NAME = "Algorithm comparator"
     SECONDS_PER_STEP = 0.001
 
-    initialPosition = (3, 7)
-
     WALL_INSTRUCTIONS = "Click on grid to add walls or use the buttons"
 
     def __init__(self):
@@ -41,8 +39,7 @@ class MainWindow:
                 self.width,
                 self.height,
                 self.nodesPerSide,
-                algorithm,
-                self.initialPosition
+                algorithm
             ) for algorithm in self.algorithmNames
         }
 
@@ -192,7 +189,6 @@ class MainWindow:
             self.algorithmModels[algorithm].undraw()
 
         self.nodesPerSide = jsonGrid['nodesPerSide']
-        self.initialPosition = jsonGrid['startPosition']
 
         self.algorithmModels = { 
             algorithm: AlgorithmGrid(
@@ -200,7 +196,7 @@ class MainWindow:
                 self.height,
                 self.nodesPerSide,
                 algorithm,
-                self.initialPosition,
+                jsonGrid['startPosition'],
                 jsonGrid['finishPosition'],
                 jsonGrid['grid']
             ) for algorithm in self.algorithmNames
