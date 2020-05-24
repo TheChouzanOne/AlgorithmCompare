@@ -97,24 +97,6 @@ class AlgorithmGrid:
         startCol = self.startPosition[1]
 
         return self.grid[startRow][startCol]
-    
-    def toJson(self):
-        jsonDict = {
-            'nodesPerSide': self.nodesPerSide,
-            'startPosition': self.startPosition,
-            'finishPosition': self.finishPosition
-        }
-
-        grid = [
-            ['W' if cell.isWall() \
-                else 'U' \
-                for cell in row
-            ] for row in self.grid
-        ]
-
-        jsonDict['grid'] = grid
-
-        return json.dumps(jsonDict)
 
 
 
