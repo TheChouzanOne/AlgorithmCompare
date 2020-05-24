@@ -8,6 +8,7 @@ from win32api import GetSystemMetrics
 from ViewConfiguration import getConfiguration, getAlgorithmsInOrder
 
 from Button import Button
+from NumberInput import NumberInput
 from InstructionsText import Instructions
 
 from AlgorithmGrid import AlgorithmGrid
@@ -53,6 +54,7 @@ class MainWindow:
         self._setupChangeFinishButton()
         self._setupChangeStartButton()
         self._setupInstructions()
+        self._setupUpdateGridSizeEntry()
 
     def _setupGrids(self):
         for algorithm in self.algorithmNames:
@@ -105,6 +107,13 @@ class MainWindow:
 
         self.changeStartButton = Button('Change start\n cell', 'yellow', position, size, self._changeStartNode)
         self.changeStartButton.draw(self.window)
+
+    def _setupUpdateGridSizeEntry(self):
+        size = self._getButtonSize()
+        position = self._getButtonPosition(size, -4)
+
+        self.updateGridSizeEntry = NumberInput(position, size, self._updateGridSize, defaultNumber = self.nodesPerSide, text = "Maze size")
+        self.updateGridSizeEntry.draw(self.window)
 
     def _getButtonSize(self):
         return (
@@ -172,6 +181,8 @@ class MainWindow:
             self.changeFinishButton.click()
         elif self.changeStartButton.isClicked(xClick, yClick):
             self.changeStartButton.click()
+        elif self.updateGridSizeEntry.isClicked(xClick, yClick):
+            self.updateGridSizeEntry.click()
         else:
             row, column = self._getCellClickedCoordinates(xClick, yClick)
             if(not (row < 0 or column < 0)):
@@ -179,15 +190,32 @@ class MainWindow:
                     cell = self.algorithmModels[algorithm][row][column]
                     cell.click()
 
+    def undrawGrids(self):
+        for algorithm in self.algorithmNames:
+            self.algorithmModels[algorithm].undraw()
+
+    def _updateGridSize(self):
+        self.undrawGrids()
+        self.nodesPerSide = self.updateGridSizeEntry.getNumber()
+
+        self.algorithmModels = { 
+            algorithm: AlgorithmGrid(
+                self.width,
+                self.height,
+                self.nodesPerSide,
+                algorithm
+            ) for algorithm in self.algorithmNames
+        }
+
+        self._setupGrids()
+
     def _loadMaze(self):
         jsonGrid = GridJsonSerializer.loadFile()
         
         if jsonGrid is None:
             return
 
-        for algorithm in self.algorithmNames:
-            self.algorithmModels[algorithm].undraw()
-
+        self.undrawGrids()
         self.nodesPerSide = jsonGrid['nodesPerSide']
 
         self.algorithmModels = { 
